@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Course Stratégique</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at top,#203f5c,#0b1320 70%);font-family:system-ui,sans-serif;color:#fff}.wrap{width:min(390px,94vw)}header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}h1{font-size:20px;margin:0}.hud{display:flex;gap:8px}.pill{padding:7px 10px;border:1px solid #ffffff22;border-radius:999px;background:#ffffff10;font-weight:700;font-variant-numeric:tabular-nums}#game{position:relative;height:min(68vh,620px);min-height:420px;overflow:hidden;border:3px solid #ffffff18;border-radius:24px;background:#29313a;box-shadow:0 24px 70px #0008}.road{position:absolute;inset:0 48px;background:#3d454e;border-left:8px solid #dfe5e8;border-right:8px solid #dfe5e8}.dash{position:absolute;inset:0 50%;border-left:5px dashed #fff9;animation:road 0.45s linear infinite}@keyframes road{to{transform:translateY(46px)}}.car{position:absolute;width:48px;height:82px;border-radius:12px 12px 16px 16px;z-index:3;box-shadow:0 8px 15px #0008}.player{bottom:24px;background:linear-gradient(90deg,#ffad2f 0 18%,#ed6a24 18% 82%,#ffad2f 82%)}.enemy{background:linear-gradient(90deg,#d8efff 0 18%,#2993cc 18% 82%,#d8efff 82%)}.car:before,.car:after{content:"";position:absolute;top:18px;width:8px;height:14px;background:#111;border-radius:2px}.car:before{left:-5px}.car:after{right:-5px}.player:after{box-shadow:0 35px 0 #111}.window{position:absolute;left:8px;right:8px;top:14px;height:18px;border-radius:5px;background:#17364a}.enemy .window{background:#1f2630}.controls{display:flex;gap:10px;margin-top:12px}.control{flex:1;height:54px;border:1px solid #ffffff22;border-radius:14px;background:#ffffff12;color:white;font-size:24px}#overlay{position:absolute;inset:0;z-index:8;display:grid;place-items:center;text-align:center;background:#101827bb;backdrop-filter:blur(5px)}#overlay.hidden{display:none}.panel{width:78%;padding:24px;border:1px solid #ffffff25;border-radius:22px;background:#18243ae8}.panel h2{margin:0 0 8px}.panel p{margin:0 0 18px;color:#bdcad9}button.primary{border:0;border-radius:12px;padding:12px 18px;background:#76e3c2;color:#102a26;font-weight:800;font-size:16px}@media(max-height:600px){#game{height:62vh;min-height:340px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>Course Stratégique</h1><div class="hud"><div class="pill">Score <span id="score">0</span></div><div class="pill">Meilleur <span id="best">0</span></div></div></header>
+<div id="game"><div class="road"></div><div class="dash"></div><div id="player" class="car player"><i class="window"></i></div><div id="overlay"><div class="panel"><h2 id="title">Prêt à courir ?</h2><p id="message">Évite les voitures et tiens le plus longtemps possible.</p><button id="start" class="primary">Démarrer</button></div></div></div>
+<div class="controls"><button id="left" class="control" aria-label="Déplacer à gauche">←</button><button id="right" class="control" aria-label="Déplacer à droite">→</button></div>
+</div>
+<script>
+const game=document.querySelector('#game'),player=document.querySelector('#player'),overlay=document.querySelector('#overlay'),title=document.querySelector('#title'),message=document.querySelector('#message'),scoreEl=document.querySelector('#score'),bestEl=document.querySelector('#best'),start=document.querySelector('#start');
+let lane=1,running=false,score=0,speed=3.4,last=0,spawn=0,enemies=[],raf=0,best=Number(localStorage.getCourseBest||0);bestEl.textContent=best;
+const lanes=[.18,.5,.82];
+function placePlayer(){player.style.left=(lanes[lane]*game.clientWidth-player.offsetWidth/2)+'px'}
+function move(dir){if(!running)return;lane=Math.max(0,Math.min(2,lane+dir));placePlayer()}
+function addEnemy(){const car=document.createElement('div');car.className='car enemy';const enemyLane=Math.floor(Math.random()*3);car.style.left=(lanes[enemyLane]*game.clientWidth-car.offsetWidth/2)+'px';car.style.top='-90px';car.innerHTML='<i class="window"></i>';game.appendChild(car);enemies.push({el:car,y:-90,lane:enemyLane})}
+function collide(a,b){const ar=a.getBoundingRect,aer=b.getBoundingRect;return ar.left<br.right&&ar.right>br.left&&ar.top<br.bottom&&ar.bottom>br.top}
+function loop(t){if(!running)return;if(!last)last=t;const dt=Math.min(32,t-last)/16.67;last=t;spawn-=dt;if(spawn<=0){addEnemy();spawn=Math.max(22,42-score*.12)+Math.random()*18}for(let i=enemies.length-1;i>=0;i--){const e=enemies[i];e.y+=speed*dt;e.el.style.top=e.y+'px';const pr=player.getBoundingClientRect(),er=e.el.getBoundingClientRect();if(pr.left<er.right&&pr.right>er.left&&pr.top<er.bottom&&pr.bottom>er.top){endGame();return}if(e.y>game.clientHeight){e.el.remove();enemies.splice(i,1);score++;speed=Math.min(8.5,3.4+score*.035);scoreEl.textContent=score}}raf=requestAnimationFrame(loop)}
+function startGame(){enemies.forEach(e=>e.el.remove());enemies=[];lane=1;score=0;speed=3.4;spawn=20;last=0;scoreEl.textContent='0';overlay.classList.add('hidden');running=true;placePlayer();raf=requestAnimationFrame(loop)}
+function endGame(){running=false;cancelAnimationFrame(raf);if(score>best){best=score;localStorage.setCourseBest=best;bestEl.textContent=best}title.textContent=score>0?'Course terminée':'Pas encore cette fois';message.textContent=`Tu as évité ${score} voiture${score>1?'s':''}.`;start.textContent='Rejouer';overlay.classList.remove('hidden')}
+start.onclick=startGame;document.querySelector('#left').onclick=()=>move(-1);document.querySelector('#right').onclick=()=>move(1);window.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='a')move(-1;if(e.key==='ArrowRight'||e.key==='d')move(1)});window.addEventListener('resize',placePlayer);placePlayer();
+</script>
+</body>
+</html>
