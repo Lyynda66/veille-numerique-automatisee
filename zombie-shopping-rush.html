@@ -1,105 +1,59 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zombie Shopping Rush</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Zombie Shopping Rush — Hypermarché infesté</title>
 <style>
-* { box-sizing: border-box; }
-body { margin: 0; background: #171d27; color: white; font-family: Arial, sans-serif; display: flex; justify-content: center; padding: 20px; }
-.container { width: 100%; max-width: 1100px; }
-h1 { color: #ff8b45; text-align: center; }
-.game { display: grid; grid-template-columns: 1fr 250px; gap: 15px; }
-canvas { width: 100%; background: #dce8d6; border: 4px solid #526575; border-radius: 12px; }
-aside { background: #fff7e8; color: #222; border-radius: 12px; padding: 15px; }
-li { padding: 7px; margin: 4px; background: #eee4d5; }
-.done { text-decoration: line-through; color: green; }
-button { padding: 12px 20px; border: none; border-radius: 8px; background: #ff7a35; font-weight: bold; cursor: pointer; }
-#overlay { position: fixed; inset: 0; z-index: 5; background: #111d; display: flex; align-items: center; justify-content: center; text-align: center; padding: 16px; }
-.panel { background: #293746; padding: 30px; border-radius: 18px; max-width: 450px; }
-.bar { height: 12px; background: #ddd; margin: 8px 0; border-radius: 10px; overflow: hidden; }
-.bar div { height: 100%; background: #e65b5b; }
-#stamina { background: #459be0; }
-@media(max-width:750px) { body{padding:10px}.game { grid-template-columns: 1fr; } canvas{height:auto} }
+*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#090d12;color:#edf7f3;font-family:Inter,system-ui,sans-serif}canvas{display:block;width:100%;height:100%}.hidden{display:none!important}.hud{position:fixed;inset:0;z-index:3;pointer-events:none}.list{position:absolute;left:20px;top:20px;width:260px;padding:16px;border:1px solid #ffffff26;border-radius:14px;background:#0d1717e8;box-shadow:0 12px 40px #0008}.list h2{margin:0 0 10px;font-size:18px}.list ul{margin:0;padding:0;list-style:none}.list li{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #ffffff12;font-size:13px}.list li.done{color:#72dfb4;text-decoration:line-through}.timer{position:absolute;top:18px;left:50%;transform:translateX(-50%);padding:10px 18px;border-radius:12px;background:#0d1717d9;border:1px solid #ffffff26;font:800 28px ui-monospace;text-align:center}.timer small{display:block;font-size:9px;color:#aebdb8;letter-spacing:.12em}.bottom{position:absolute;left:20px;right:20px;bottom:18px;display:flex;justify-content:space-between;align-items:end}.bars{width:220px}.bar{height:12px;margin:5px 0;border:1px solid #ffffff35;border-radius:20px;background:#0008;overflow:hidden}.bar i{display:block;height:100%;width:100%;background:#75dcb0;transition:.1s}.bar.health i{background:#e26666}.status{padding:11px 15px;border:1px solid #ffffff25;border-radius:12px;background:#0d1717e8;font-size:13px}.prompt{position:absolute;left:50%;bottom:105px;transform:translateX(-50%);padding:11px 16px;border-radius:10px;border:1px solid #fff2;background:#111817ed;font-weight:800}.overlay{position:fixed;inset:0;z-index:10;display:grid;place-items:center;padding:20px;background:radial-gradient(circle,#172831c9,#080b10f2)}.menu{width:min(600px,100%);text-align:center;padding:38px;border:1px solid #ffffff2c;border-radius:26px;background:linear-gradient(145deg,#17313aeF,#10151bF5);box-shadow:0 30px 100px #000a}.menu .tag{color:#86dfbc;font-weight:900;font-size:12px;letter-spacing:.16em}.menu h1{margin:10px 0 8px;font-size:clamp(42px,8vw,76px);line-height:.88;text-transform:uppercase}.menu h1 span{color:#8ce2bd}.menu p{color:#b9c7c2;line-height:1.55}.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:18px auto;text-align:left}.controls div{padding:9px;border:1px solid #ffffff16;border-radius:8px;color:#cbd8d4;font-size:13px}.controls b{color:#fff}.btn{border:0;border-radius:11px;padding:13px 22px;background:#78ddb2;color:#10251e;font-weight:900;font-size:16px;cursor:pointer}.btn:active{transform:scale(.98)}@media(max-width:700px){.list{left:8px;top:8px;width:190px;padding:10px}.list li{font-size:11px}.timer{top:auto;bottom:70px;font-size:22px}.bottom{left:8px;right:8px;bottom:8px}.bars{width:150px}.status{max-width:48%;font-size:11px}.prompt{bottom:155px}}
 </style>
 </head>
 <body>
-<div class="container">
-<h1>🧟 ZOMBIE SHOPPING RUSH 🛒</h1>
-<div class="game">
-<div>
-<canvas id="game" width="800" height="560"></canvas>
-<p>⌨️ ZQSD / WASD ou flèches : bouger | MAJ : courir</p>
+<div id="game"></div>
+<div id="hud" class="hud hidden">
+ <section class="list"><h2>Liste de courses</h2><ul id="shoppingList"></ul></section>
+ <div class="timer"><small>PRODUCTION</small><span id="timer">02:30</span></div>
+ <div class="bottom"><div class="status" id="status">Rapproche-toi d’un produit puis appuie sur Entrée.</div><div class="bars"><small>VIE</small><div class="bar health"><i id="health"></i></div><small>ENDURANCE</small><div class="bar"><i id="stamina"></i></div></div></div>
+ <div id="prompt" class="prompt hidden"></div>
 </div>
-<aside>
-<h2>📝 Liste de courses</h2>
-<p>⏱️ Temps : <b id="timer">90</b> secondes</p>
-<p>🛒 Produits : <b id="count">0/8</b></p>
-<p>🧟 Zombies : <b id="zcount">3</b></p>
-<p>❤️ Santé</p><div class="bar"><div id="health" style="width:100%"></div></div>
-<p>⚡ Endurance</p><div class="bar"><div id="stamina" style="width:100%"></div></div>
-<ul id="list"></ul>
-</aside>
-</div>
-</div>
-<div id="overlay"><div class="panel"><h1>🧟 Le supermarché de l'enfer</h1><p>Récupère tous les produits avant de te faire attraper par les zombies obèses !</p><p>Ensuite, rejoins la caisse pour gagner.</p><button id="startButton" type="button">COMMENCER LES COURSES</button></div></div>
-<script>
-'use strict';
-const canvas=document.getElementById('game');
-const ctx=canvas.getContext('2d');
-const W=800,H=560;
-const products=[{name:'🥛 Lait',x:125,y:125},{name:'🍞 Baguette',x:290,y:125},{name:'🍕 Pizza',x:475,y:125},{name:'🥫 Conserves',x:665,y:125},{name:'🍌 Bananes',x:125,y:300},{name:'🍪 Biscuits',x:290,y:300},{name:'🧀 Fromage',x:475,y:300},{name:'🧻 Papier toilette',x:665,y:300}];
-const shelves=[{x:55,y:65,w:140,h:34},{x:220,y:65,w:140,h:34},{x:405,y:65,w:140,h:34},{x:590,y:65,w:140,h:34},{x:55,y:240,w:140,h:34},{x:220,y:240,w:140,h:34},{x:405,y:240,w:140,h:34},{x:590,y:240,w:140,h:34},{x:225,y:410,w:155,h:32},{x:425,y:410,w:155,h:32}];
-const player={x:400,y:500,r:13,speed:2.5,health:100,stamina:100,invuln:0};
-const cashier={x:735,y:500,w:48,h:42};
-let zombies=[],collected=new Set(),keys={},running=false,timeLeft=90,lastFrame=0,spawnTick=0;
-function startGame(){
- player.x=400;player.y=500;player.health=100;player.stamina=100;player.invuln=0;
- zombies=[{x:65,y:185,r:22,speed:.72},{x:735,y:185,r:24,speed:.66},{x:400,y:35,r:23,speed:.62}];
- collected.clear();timeLeft=90;spawnTick=0;running=true;
- document.getElementById('overlay').style.display='none';
- updateHUD();lastFrame=performance.now();
-}
-function updateHUD(){
- document.getElementById('count').textContent=collected.size+'/8';
- document.getElementById('zcount').textContent=zombies.length;
- document.getElementById('timer').textContent=Math.ceil(timeLeft);
- document.getElementById('health').style.width=Math.max(0,player.health)+'%';
- document.getElementById('stamina').style.width=player.stamina+'%';
- document.getElementById('list').innerHTML=products.map((p,i)=>`<li class="${collected.has(i)?'done':''}">${p.name} ${collected.has(i)?'✓':'□'}</li>`).join('');
-}
-function blocked(x,y,r){
- if(x<r+8||x>W-r-8||y<r+8||y>H-r-8)return true;
- return shelves.some(s=>{const cx=Math.max(s.x,Math.min(x,s.x+s.w)),cy=Math.max(s.y,Math.min(y,s.y+s.h));return Math.hypot(x-cx,y-cy)<r});
-}
-function move(entity,dx,dy){if(!blocked(entity.x+dx,entity.y,entity.r))entity.x+=dx;if(!blocked(entity.x,entity.y+dy,entity.r))entity.y+=dy}
-function drawFloor(){
- ctx.fillStyle='#dce8d6';ctx.fillRect(0,0,W,H);ctx.strokeStyle='#c8d6c2';
- for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}
- for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
- ctx.fillStyle='#f5c45c';ctx.fillRect(cashier.x,cashier.y,cashier.w,cashier.h);ctx.fillStyle='#333';ctx.font='bold 13px Arial';ctx.fillText('CAISSE',cashier.x-2,cashier.y-8);ctx.fillText('ENTRÉE',375,552);
-}
-function drawShelves(){shelves.forEach(s=>{ctx.fillStyle='#8b5a3c';ctx.fillRect(s.x,s.y,s.w,s.h);ctx.fillStyle='#bd8a5b';ctx.fillRect(s.x,s.y,s.w,7);for(let k=0;k<4;k++){ctx.fillStyle='#f5dfb7';ctx.fillRect(s.x+10+k*32,s.y+12,19,15)}})}
-function drawProducts(){products.forEach((p,i)=>{if(collected.has(i))return;ctx.font='26px Arial';ctx.textAlign='center';ctx.fillText(p.name.split(' ')[0],p.x,p.y+8);ctx.beginPath();ctx.arc(p.x,p.y,19,0,Math.PI*2);ctx.strokeStyle='#f5a623';ctx.lineWidth=2;ctx.stroke()});ctx.textAlign='left'}
-function drawPlayer(){ctx.font='30px Arial';ctx.textAlign='center';ctx.fillText('🧑',player.x,player.y+10);if(player.invuln>0){ctx.strokeStyle='white';ctx.beginPath();ctx.arc(player.x,player.y,20,0,Math.PI*2);ctx.stroke()}ctx.textAlign='left'}
-function drawZombies(){zombies.forEach(z=>{ctx.font='43px Arial';ctx.textAlign='center';ctx.fillText('🧟',z.x,z.y+12)});ctx.textAlign='left'}
-function draw(){drawFloor();drawShelves();drawProducts();drawZombies();drawPlayer();ctx.fillStyle='#263542';ctx.font='bold 13px Arial';ctx.fillText('Récupère les 8 articles puis rejoins la caisse !',18,548)}
-function finish(win){running=false;const overlay=document.getElementById('overlay');overlay.innerHTML=`<div class="panel"><h1>${win?'🏆 VICTOIRE !':'💀 GAME OVER'}</h1><p>${win?'Tu as réussi tes courses sans finir au menu des zombies !':'Les zombies ont gagné cette fois. Retente ta chance !'}</p><button id="restartButton" type="button">REJOUER</button></div>`;overlay.style.display='flex';document.getElementById('restartButton').addEventListener('click',startGame)}
-function update(dt){
- if(!running)return;timeLeft-=dt/1000;if(timeLeft<=0){timeLeft=0;finish(false);return}
- let dx=0,dy=0;if(keys.ArrowUp||keys.KeyW||keys.KeyZ)dy--;if(keys.ArrowDown||keys.KeyS)dy++;if(keys.ArrowLeft||keys.KeyA||keys.KeyQ)dx--;if(keys.ArrowRight||keys.KeyD)dx++;
- const moving=dx||dy,sprint=keys.ShiftLeft||keys.ShiftRight||keys.Space,len=Math.hypot(dx,dy)||1;dx/=len;dy/=len;const fast=sprint&&moving&&player.stamina>0,speed=player.speed*(fast?1.75:1);
- if(fast)player.stamina=Math.max(0,player.stamina-25*dt/1000);else player.stamina=Math.min(100,player.stamina+14*dt/1000);
- move(player,dx*speed*dt/16.67,dy*speed*dt/16.67);if(player.invuln>0)player.invuln-=dt/1000;
- products.forEach((p,i)=>{if(!collected.has(i)&&Math.hypot(p.x-player.x,p.y-player.y)<29)collected.add(i)});
- zombies.forEach(z=>{const vx=player.x-z.x,vy=player.y-z.y,d=Math.hypot(vx,vy)||1;move(z,vx/d*z.speed*dt/16.67,vy/d*z.speed*dt/16.67);if(d<z.r+player.r+2&&player.invuln<=0){player.health-=22;player.invuln=1;if(player.health<=0){player.health=0;finish(false)}}});
- spawnTick+=dt;if(spawnTick>22000&&zombies.length<7){spawnTick=0;zombies.push({x:Math.random()*W,y:Math.random()*H/2,r:23,speed:.7})}
- const atCashier=player.x>cashier.x-player.r&&player.y>cashier.y-player.r;if(collected.size===products.length&&atCashier)finish(true);updateHUD();
-}
-function loop(t){const dt=Math.min(40,t-lastFrame||16);lastFrame=t;update(dt);draw();requestAnimationFrame(loop)}
-window.addEventListener('keydown',e=>{keys[e.code]=true;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault()});window.addEventListener('keyup',e=>{keys[e.code]=false});window.addEventListener('blur',()=>{keys={}});
-document.getElementById('startButton').addEventListener('click',startGame);
-updateHUD();lastFrame=performance.now();requestAnimationFrame(loop);
+<div id="menu" class="overlay"><main class="menu"><div class="tag">HYPERMARCHÉ INFESTÉ — NIVEAU 1</div><h1>ZOMBIE<br><span>SHOPPING RUSH</span></h1><p>Explore le magasin, récupère tous les articles de ton panier et atteins la caisse avant que les zombies obèses ne te rattrapent.</p><div class="controls"><div><b>WASD / ZQSD</b><br>Déplacement</div><div><b>Souris</b><br>Caméra</div><div><b>Shift</b><br>Courir</div><div><b>Entrée</b><br>Ramasser / Caisse</div></div><button id="start" class="btn">COMMENCER LES COURSES</button></main></div>
+<div id="end" class="overlay hidden"><main class="menu"><h1 id="endTitle">Courses terminées</h1><p id="endText"></p><button id="again" class="btn">RECOMMENCER</button></main></div>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+const mount=document.getElementById('game');
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x9caeb1);scene.fog=new THREE.Fog(0x9caeb1,25,70);
+const camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,160);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;mount.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xe7f1ed,0x39433c,1.9));const sun=new THREE.DirectionalLight(0xfff1d4,2.6);sun.position.set(-18,28,14);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-25;sun.shadow.camera.right=25;sun.shadow.camera.top=25;sun.shadow.camera.bottom=-25;scene.add(sun);
+const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.72,metalness:.03});function box(parent,x,y,z,w,h,d,c,shadow=true){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c));m.position.set(x,y,z);m.castShadow=shadow;m.receiveShadow=true;parent.add(m);return m}
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(38,48),mat(0xbab5a3));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
+box(scene,0,3,-24,38,6,.5,0xd2cdbb);box(scene,-19,3,0,.5,6,48,0xd2cdbb);box(scene,19,3,0,.5,6,48,0xd2cdbb);box(scene,0,3,24,38,6,.5,0xd2cdbb);
+for(let x=-15;x<16;x+=5){const light=new THREE.Mesh(new THREE.BoxGeometry(3,.08,1.3),new THREE.MeshBasicMaterial({color:0xfff1c9}));light.position.set(x,5.7,-3);scene.add(light)}
+function sign(text,x,z,c){const cn=document.createElement('canvas');cn.width=512;cn.height=128;const q=cn.getContext('2d');q.fillStyle=c;q.fillRect(0,0,512,128);q.fillStyle='#fff';q.font='bold 48px sans-serif';q.textAlign='center';q.textBaseline='middle';q.fillText(text,256,64);const m=new THREE.Mesh(new THREE.PlaneGeometry(5,1.25),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cn)}));m.position.set(x,4,z);scene.add(m)}
+sign('FRUITS & LÉGUMES',-12,-20,'#397b52');sign('BOULANGERIE',0,-20,'#9b693e');sign('SURGELÉS',12,-20,'#3d718c');sign('CAISSE',0,21,'#9b423b');
+const aisleZ=[-14,-7,0,7,14];for(const z of aisleZ)for(const x of [-12,-6,0,6,12]){const g=new THREE.Group();g.position.set(x,0,z);scene.add(g);box(g,0,1.2,0,5,2.4,.38,0x557266);for(const y of [.45,1.25,2.05])box(g,0,y,.42,4.7,.11,.85,0xb4a27f);for(let r=0;r<3;r++)for(let n=0;n<6;n++)box(g,-2+n*.78,.72+r*.72,.55,.5,.48,.42,[0xd75b49,0xe4c34d,0x598ac1,0x63a969][(n+r)%4])}
+for(const x of [-5,0,5]){box(scene,x,.7,19,3.7,1.4,1.4,0x6c8177);box(scene,x,1.4,18.7,.55,.18,.5,0x252c2c)}
+const player=new THREE.Group();scene.add(player);const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.42,.9,5,12),mat(0x4faaa0));torso.position.y=1.2;torso.castShadow=true;player.add(torso);const head=new THREE.Mesh(new THREE.SphereGeometry(.34,20,16),mat(0xf0b98c));head.position.y=2.05;head.castShadow=true;player.add(head);const hair=new THREE.Mesh(new THREE.SphereGeometry(.35,16,10,0,Math.PI*2,0,Math.PI*.52),mat(0x514031));hair.position.y=2.12;player.add(hair);
+function zombie(x,z,type=0){const g=new THREE.Group();g.position.set(x,0,z);scene.add(g);const skin=mat(type?0x98a85a:0x728d4f);const belly=new THREE.Mesh(new THREE.SphereGeometry(type?.78:.68,20,16),skin);belly.position.y=1.02;belly.scale.y=1.22;belly.castShadow=true;g.add(belly);const h=new THREE.Mesh(new THREE.SphereGeometry(.35,16,12),skin);h.position.y=1.95;h.castShadow=true;g.add(h);box(g,0,1.45,0,.9,.65,.7,type?0xba6b52:0x66525d);for(const ex of [-.12,.12]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.055,8,8),mat(0xffe08a));eye.position.set(ex,1.98,.32);g.add(eye)}return{group:g,speed:type?1.1:1.7,stun:0,phase:Math.random()*6,type}}
+const products=[['Cola','Boissons',0xd34a3d],['Pâtes','Épicerie',0xe2bc55],['Pizza surgelée','Surgelés',0xbd6042],['Chips','Confiserie',0xdfad42],['Céréales','Petit déjeuner',0xaa7447],['Baguette','Boulangerie',0xd09551],['Mayonnaise','Épicerie',0xeee7cf],['Lait','Produits frais',0xf1eee1],['Papier toilette','Ménage',0xdce6e7]];
+let keys={},playing=false,remaining=150,lives=3,stamina=100,hitCooldown=0,targetItems=[],pickups=[],zombies=[],yaw=0,pitch=.18,score=0;
+function makePickup(p,x,z){const g=new THREE.Group();g.position.set(x,.55,z);const boxm=new THREE.Mesh(new THREE.BoxGeometry(.55,.7,.5),mat(p[2]));boxm.castShadow=true;g.add(boxm);const band=new THREE.Mesh(new THREE.BoxGeometry(.57,.12,.52),mat(0xffffff));band.position.y=.08;g.add(band);const ring=new THREE.Mesh(new THREE.TorusGeometry(.5,.035,8,24),new THREE.MeshBasicMaterial({color:0x74dfb2}));ring.rotation.x=Math.PI/2;ring.position.y=-.35;g.add(ring);scene.add(g);pickups.push({group:g,data:p,taken:false})}
+function makeList(){targetItems=[];const pool=[...products].sort(()=>Math.random-.5).slice(0,5);for(const p of pool)targetItems.push({data:p,need:Math.random()<.2?2:1,got:0})}
+function renderList(){const ul=document.getElementById('shoppingList');ul.innerHTML='';for(const t of targetItems){const li=document.createElement('li');li.innerHTML=`<span>${t.data[0]}</span><b>${t.got}/${t.need}</b>`;if(t.got>=t.need)li.className='done';ul.appendChild(li)}}
+function reset(){for(const p of pickups)scene.remove(p.group);for(const z of zombies)scene.remove(z.group.group);pickups=[];zombies=[];makeList();renderList();for(let i=0;i<targetItems.length;i++){const t=targetItems[i];for(let n=0;n<t.need;n++){const z=-16+(i*5+n*2)%32,x=-14+(i*7+n*3)%28;makePickup(t.data,x+(Math.random-.5)*2,z+(Math.random-.5)*2)}}for(let i=0;i<7;i++)zombies.push(zombie((Math.random-.5)*30,(Math.random-.5)*38,i%4===0));player.position.set(0,0,21);yaw=0;pitch=.18;remaining=150;lives=3;stamina=100;hitCooldown=0;score=0;playing=true;document.getElementById('menu').classList.add('hidden');document.getElementById('end').classList.add('hidden');document.getElementById('hud').classList.remove('hidden');document.getElementById('status').textContent='Rapproche-toi d’un article lumineux puis appuie sur Entrée.';renderer.domElement.requestPointerLock&&renderer.domElement.requestPointerLock()}
+function start(){reset()}document.getElementById('start').onclick=start;document.getElementById('again').onclick=start;
+document.addEventListener('pointerlockchange',()=>{});window.addEventListener('mousemove',e=>{if(document.pointerLockElement===renderer.domElement){yaw-=e.movementX*.0023;pitch=Math.max(-.18,Math.min(.55,pitch-e.movementY*.0015))}});renderer.domElement.addEventListener('click',()=>{if(playing&&document.pointerLockElement!==renderer.domElement)renderer.domElement.requestPointerLock&&renderer.domElement.requestPointerLock()});
+window.addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(e.key==='Enter')interact();if([' ','tab'].includes(e.key.toLowerCase()))e.preventDefault()});window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+function nearest(){let best=null,dist=2.15;for(const p of pickups){if(p.taken)continue;const d=player.position.distanceTo(p.group.position);if(d<dist){dist=d;best=p}}if(allCollected()&&player.position.distanceTo(new THREE.Vector3(0,0,21))<3)return{checkout:true};return best}
+function allCollected(){return targetItems.every(t=>t.got>=t.need)}
+function interact(){if(!playing)return;const n=nearest();if(!n){document.getElementById('status').textContent='Aucun article à portée. Approche-toi d’un produit vert.';return}if(n.checkout){score+=250;end(true,'Tous les articles ont été scannés avant la fermeture.');return}n.taken=true;n.group.visible=false;const t=targetItems.find(t=>t.data[0]===n.data[0]);if(t&&t.got<t.need){t.got++;score+=20;renderList();document.getElementById('status').textContent=t.data[0]+' a été ajouté au panier.';if(allCollected())document.getElementById('status').textContent='Liste terminée ! Rejoins la caisse, près de l’entrée.'}else document.getElementById('status').textContent='Cet article n’est pas sur ta liste.'}
+function end(win,text){playing=false;if(document.pointerLockElement)document.exitPointerLock();document.getElementById('end').classList.remove('hidden');document.getElementById('endTitle').textContent=win?'Courses réussies':'Game Over';document.getElementById('endText').textContent=text+' Score : '+score}
+function move(dt){const forward=(keys.w||keys.z?1:0)-(keys.s?1:0),strafe=(keys.d?1:0)-(keys.a||keys.q?1:0);const sprint=(keys.shift||keys.shiftleft)&&stamina>0&&!!(forward||strafe);const speed=(sprint?8:5)*dt;if(sprint)stamina=Math.max(0,stamina-25*dt);else stamina=Math.min(100,stamina+18*dt);document.getElementById('stamina').style.width=stamina+'%';let dx=(Math.sin(yaw)*forward+Math.cos(yaw)*strafe)*speed, dz=(Math.cos(yaw)*forward-Math.sin(yaw)*strafe)*speed;player.position.x=THREE.MathUtils.clamp(player.position.x+dx,-17,17);player.position.z=THREE.MathUtils.clamp(player.position.z+dz,-22,22);player.rotation.y=yaw}
+function blockedShelf(x,z){for(const sz of aisleZ)for(const sx of [-12,-6,0,6,12])if(Math.abs(x-sx)<2.7&&Math.abs(z-sz)<.85)return true;return false}
+function updateZombies(dt){let nearest=99;for(const z of zombies){const p=z.group.position,d=Math.hypot(player.position.x-p.x,player.position.z-p.z);nearest=Math.min(nearest,d);if(z.stun>0){z.stun-=dt;continue}if(d>1.35){const dx=(player.position.x-p.x)/d,dz=(player.position.z-p.z)/d;const nx=p.x+dx*z.speed*dt,nz=p.z+dz*z.speed*dt;if(!blockedShelf(nx,nz)){p.x=THREE.MathUtils.clamp(nx,-17,17);p.z=THREE.MathUtils.clamp(nz,-22,22)}z.group.rotation.y=Math.atan2(dx,dz);p.y=Math.abs(Math.sin(performance.now*.008+z.phase))*.07}else if(hitCooldown<=0){lives--;hitCooldown=1.5;document.getElementById('health').style.width=(lives/3*100)+'%';document.getElementById('status').textContent='Un zombie t’a touché !';if(lives<=0)end(false,'Tes trois vies ont été perdues.')}}}
+function cameraUpdate(){const distance=7.2,height=4.1;const target=player.position.clone().add(new THREE.Vector3(0,1.3,0));const offset=new THREE.Vector3(Math.sin(yaw)*distance*Math.cos(pitch),height*Math.cos(pitch),Math.cos(yaw)*distance*Math.cos(pitch));camera.position.lerp(target.add(offset),.12);camera.lookAt(target.x,target.y-.2,target.z)}
+let last=performance.now();function animate(now){requestAnimationFrame(animate);const dt=Math.min(.05,(now-last)/1000);last=now;if(playing){remaining-=dt;hitCooldown=Math.max(0,hitCooldown-dt);if(remaining<=0){remaining=0;end(false,'Le temps est écoulé.');}move(dt);updateZombies(dt);document.getElementById('timer').textContent=`${String(Math.floor(remaining/60)).padStart(2,'0')}:${String(Math.floor(remaining%60)).padStart(2,'0')}`;const n=nearest();const prompt=document.getElementById('prompt');if(n){prompt.classList.remove('hidden');prompt.textContent=n.checkout?'Entrée — payer à la caisse':`Entrée — ramasser ${n.data[0]}`}else prompt.classList.add('hidden');for(const p of pickups)if(!p.taken)p.group.position.y=.55+Math.sin(now*.0025+p.group.position.x)*.08}cameraUpdate();renderer.render(scene,camera)}requestAnimationFrame(animate);
+window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
 </script>
 </body>
 </html>
