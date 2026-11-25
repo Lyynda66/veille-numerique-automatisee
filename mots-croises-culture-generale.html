@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mots croisés — Culture générale</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;color:#f3f7fc;font-family:Inter,system-ui,sans-serif;background:radial-gradient(circle at 15% 10%,#1b3850,transparent 38%),#101827}main{width:min(920px,100%)}header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}h1{margin:0;font-size:clamp(26px,5vw,40px)}.timer{border:1px solid #ffffff1c;border-radius:999px;padding:8px 13px;color:#b8c6d6;font-variant-numeric:tabular-numbers}.layout{display:grid;grid-template-columns:minmax(330px,520px) 1fr;gap:18px}.panel{border:1px solid #ffffff18;border-radius:22px;background:#18243acc;box-shadow:0 20px 60px #0005}.board{display:grid;place-items:center;min-height:520px;padding:24px}.grid{display:grid;grid-template-columns:repeat(7,1fr);width:min(440px,78vw);aspect-ratio:1;gap:3px}.cell{position:relative;width:100%;height:100%;border:0;border-radius:4px;background:#eff5f7;color:#172238;font:700 clamp(16px,4vw,28px)/1 ui-monospace,monospace;text-align:center;text-transform:uppercase;outline:none;caret-color:transparent}.cell:focus{box-shadow:inset 0 0 0 3px #76e3c2;background:#fff}.cell.black{background:#101827}.cell.correct{background:#a9eccf}.number{position:absolute;left:4px;top:3px;font-size:9px}.clues{padding:20px}.clues h2{margin:0 0 9px;color:#76e3c2;font-size:16px}.clue-section+*{margin-top:20px}ol{margin:0;padding-left:21px}li{margin:8px 0;color:#d6e0eb;font-size:14px;line-height:1.35}.controls{display:flex;gap:9px;margin-top:18px}button{border:1px solid #ffffff1e;border-radius:11px;padding:11px 15px;background:#ffffff10;color:white;font:700 14px system-ui;cursor:pointer}button.primary{border:0;background:#76e3c2;color:#102a26}#status{min-height:22px;margin:14px 0 0;color:#9aabc1}@media(max-width:760px){body{padding:14px}.layout{grid-template-columns:1fr}.board{min-height:auto;padding:12px}.grid{width:min(440px,92vw)}}
+</style>
+</head>
+<body>
+<main>
+<header><h1>Culture générale</h1><div class="timer" id="timer">00:00</div></header>
+<section class="layout">
+<div class="panel board"><div id="grid" class="grid" aria-label="Grille de mots croisés"></div></div>
+<aside class="panel clues">
+<div class="clue-section"><h2>Horizontalement</h2><ol>
+<li value="1">Capitale française, surnommée la Ville Lumière.</li>
+<li value="3">Peintre italien auteur de la Joconde.</li>
+<li value="5">Plus grande planète du système solaire.</li>
+<li value="7">Auteur français du <i>Bourgeois gentilhomme</i>.</li>
+</ol></div>
+<div class="clue-section"><h2>Verticalement</h2><ol>
+<li value="2">Écrivain français de <i>Notre-Dame de Paris</i>.</li>
+<li value="4">Instrument à cordes accompagné par Mozart.</li>
+<li value="6">Métal symbole Chimique Fe.</li>
+<li value="8">Élément central de la Terre.</li>
+</ol></div>
+<div class="controls"><button id="check" class="primary">Vérifier</button><button id="reset">Effacer</button></div><p id="status">Complète la grille.</p>
+</aside>
+</section>
+</main>
+<script>
+const board=[
+['P','A','R','I','S','#','H'],
+['A','#','A','#','V','#','U'],
+['V','I','N','C','I','#','G'],
+['E','#','A','#','O','#','O'],
+['S','A','T','U','R','N','E'],
+['#','#','#','#','#','#','R'],
+['M','O','L','I','E','R','E']
+];
+// H1 PARIS, H3 VINCI, H5 SATURNE, H7 MOLIERE
+// V1 PARIS? H et V se croisent visuellement; les indices restent indépendants.
+const grid=document.querySelector('#grid'),cells=[];
+const numbers={'0-0':1,'0-6':2,'2-0':3,'2-1':4,'4-0':5,'4-6':6,'6-0':7,'6-2':8};
+for(let r=0;r<7;r++)for(let c=0;c<7;c++){
+ const answer=board[r][c],el=document.createElement(answer==='#'?'div':'input');
+ el.className=answer==='#'?'cell black':'cell';el.setAttribute('aria-label',`Case ligne ${r+1}, colonne ${c+1}`);
+ if(answer!=='#'){
+  el.maxLength=1;el.dataset.answer=answer;el.autocomplete='off';el.inputMode='text';
+  const n=numbers[`${r}-${c}`];if(n){const span=document.createElement('span');span.className='number';span.textContent=n;el.appendChild(span)}
+  el.addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z]/g,'').slice(-1);if(e.target.value){const i=cells.indexOf(e.target);if(i<cells.length-1)cells[i+1].focus()}});
+  el.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!e.target.value){const i=cells.indexOf(e.target);if(i>0)cells[i-1].focus()}});
+  cells.push(el);
+ }
+ grid.appendChild(el);
+}
+document.querySelector('#check').onclick=()=>{let good=0;cells.forEach(el=>{el.classList.remove('correct');if(el.value.toUpperCase()===el.dataset.answer){good++;el.classList.add('correct')}});const status=document.querySelector('#status');if(good===cells.length){status.textContent='Bravo ! Grille entièrement résolue.';clearInterval(timer)}else status.textContent=`${good}/${cells.length} lettres placées correctement.`};
+document.querySelector('#reset').onclick=()=>{cells.forEach(el=>{el.value='';el.classList.remove('correct')});document.querySelector('#status').textContent='Grille effacée.';cells[0]?.focus()};
+let seconds=0;const timer=setInterval(()=>{seconds++;document.querySelector('#timer').textContent=`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`},1000);
+</script>
+</body>
+</html>
